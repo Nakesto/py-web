@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+  <body>
+    <h1>Let's plot random numbers</h1>
+    <div id="plot"></div>
+    <py-config type="json">
+        {
+          "packages": ["numpy", "matplotlib", "pandas", "seaborn", "scikit-learn"]
+        }
+    </py-config>
+    <py-script output="plot">
+      import matplotlib.pyplot as plt
+      import numpy as np
+      import pandas as pd
+      import seaborn as sns
+      from sklearn.neighbors import KNeighborsClassifier
+      from sklearn.model_selection import train_test_split
+      df = pd.read_csv('covid_19.csv')
+      df.head()
+    </py-script>
+  </body>
+</html>
