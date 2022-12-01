@@ -6,25 +6,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+        <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Fredoka One">
     <link rel="stylesheet" href="./index.css">
   </head>
   <body>
-    <h1>Let's plot random numbers</h1>
-    <div id="plot"></div>
+    <div class="container">
+      <h1 style="text-align: center;">Prediction Covid-19 berdasarkan Total Cases dan Total Deaths di Indonesia Per Minggu</h1>
+
+      <div class="box" style="padding: 20px;">
+        <label style="text-align: right; width: 100px;" for="case">Total Cases</label>
+        <input class="rounded" id="case" name="case" type="text">
+      </div>
+      <div class="box" style="padding: 20px;">
+        <label style="text-align: right; width: 100px;" for="death">Total Deaths</label>
+        <input class="rounded" id="death" name="death" type="text">
+      </div>
+      <button class="button" id="predict" >Predict</button>
+      <div id="card" class="card">
+        <p id="result" style="text-align: center;"></p>
+        <p id="himbauan"></p>
+      </div>
+    </div>
+
+
     <py-config type="json">
         {
           "packages": ["numpy", "matplotlib", "pandas", "seaborn", "scikit-learn"]
         }
     </py-config>
-    <py-script output="plot">
+    <py-script>
       import matplotlib.pyplot as plt
       import numpy as np
       import pandas as pd
       import seaborn as sns
       from sklearn.neighbors import KNeighborsClassifier
       from sklearn.model_selection import train_test_split
-      df = pd.read_csv('covid_19.csv')
-      df.head()
+      from pyodide.http import open_url
+      from js import document 
+      from pyodide.ffi import create_proxy
+
+      pd.options.mode.chained_assignment = None  
+
+      url_content = open_url("https://raw.githubusercontent.com/Nakesto/py-web/master/covid_19.csv")
+
+      # Clear data with Nan Value
+      df = pd.read_csv(url_content)
+      nan_df = df[df.isna().any(axis=1)]
+      nan_df.head(81)
+      df = df.dropna(how='all')
+
+      # Kita hanya membutuhkan kolom location, total cases, dan total death.
+      data = df[["Location", "Total Cases", "Total Deaths", "Date"]]
+      data['Date'] = pd.to_datetime(data['Date'])
+      df_data = data.groupby(['Location', pd.Grouper(key='Date', freq='W-MON')])[['Total Cases', 'Total Deaths']].sum().reset_index().sort_values('Date')
+      jawa = df_data
+
+      # Rules untuk Menentukan Tingkat Resiko Per Provinsi
+      jawa["Tingkat Resiko"] = "Resiko Rendah"
+      users_with_problem = jawa.loc[jawa["Total Deaths"] / jawa["Total Cases"] * 100 > 2, "Total Deaths"]
+      jawa.loc[jawa["Total Deaths"].isin(users_with_problem), "Tingkat Resiko"] = "Resiko Tinggi"
+
+      # Mengset Varibel Bebas ke X dan Variabel Tetap ke Y
+      X = jawa[['Total Cases', 'Total Deaths']]
+      y = jawa['Tingkat Resiko']
+
+      # Melakukan Training Model Data
+      X_train, X_test, y_train, y_test = train_test_split(X, y, random_state = 2000)
+
+      clf = KNeighborsClassifier(n_neighbors=4)
+
+      clf.fit(X_train, y_train)
+
+      case = Element('death')
+      death = Element('case')
+      result = Element('result')
+      himbauan = Element('himbauan')
+
+      def calculate_predict(*args, **kwargs):
+        predictions = clf.predict([[int(death.value),int(case.value)]])
+        document.getElementById("card").classList.remove("aman")
+        document.getElementById("card").classList.remove("berbahaya")  
+        if predictions[0] == "Resiko Rendah":
+          document.getElementById("card").className += " " + "aman"
+          himbauan.write("Daerah masih dalam keadaan aman")
+        else:
+          document.getElementById("card").className += " " + "berbahaya"
+          himbauan.write("Daerah masih dalam keadaan berbahaya")
+        result.write(predictions[0])
+
+      function_proxy = create_proxy(calculate_predict)
+
+      document.getElementById("predict").addEventListener("click", function_proxy)
     </py-script>
   </body>
 </html>

@@ -1,0 +1,54 @@
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    width: 100%;
+}
+
+.card{
+    max-width: 320px;
+    margin-top: 50px;
+    padding: 2rem;
+}
+
+.button{
+    padding: 15px;
+    background-color: rgb(0, 140, 255);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    color: white;
+}
+
+.aman{
+    background-color: greenyellow;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    transition-duration: 0.8s;
+}
+
+.berbahaya{
+    background-color: rgb(255, 65, 65);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    transition-duration: 0.8s;
+}
+
+.rounded{
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+}
+
+.box{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+      body {
+        font-family: 'Fredoka One', serif;
+      }

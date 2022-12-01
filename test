@@ -1,0 +1,30 @@
+      jawa = df_data
+
+      # Rules untuk Menentukan Tingkat Resiko Per Provinsi
+      jawa["Tingkat Resiko"] = "Resiko Rendah"
+      users_with_problem = jawa.loc[jawa["Total Deaths"] / jawa["Total Cases"] * 100 > 2.8, "Location"]
+      jawa.loc[jawa["Location"].isin(users_with_problem), "Tingkat Resiko"] = "Resiko Tinggi"
+
+      # Mengset Varibel Bebas ke X dan Variabel Tetap ke Y
+      X = jawa[['Total Cases', 'Total Deaths']]
+      y = jawa['Tingkat Resiko']
+
+      # Melakukan Training Model Data
+      X_train, X_test, y_train, y_test = train_test_split(X, y, random_state = 2000)
+
+      clf = KNeighborsClassifier(n_neighbors=4)
+
+      clf.fit(X_train, y_train)
+
+      case = Element('death')
+      death = Element('case')
+      result = Element('result')
+
+      def calculate_predict(*args, **kwargs):
+        predictions = clf.predict([[int(death.value),int(case.value)]])
+        print(predictions[0])
+        result.write(predictions[0])
+
+      function_proxy = create_proxy(calculate_predict)
+
+      document.getElementById("predict").addEventListener("click", function_proxy)
